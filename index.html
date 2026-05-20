@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚓ Norwegian Fjords Cruise Tracker 2026</title>
+<style>
+  :root {
+    --navy:#0a1628;--navy2:#12264a;--navy3:#1a3560;
+    --ocean:#1e5fa8;--ocean-light:#2e7dd4;--teal:#0e9aa0;
+    --gold:#c8a84b;--gold-light:#e8c86a;
+    --white:#f0f4ff;--gray:#8090b0;
+    --red:#e04040;--green:#2ecc71;--yellow:#f1c40f;--blue:#3498db;
+    --card-bg:#0d1f3c;--card-border:#1e3560;--radius:10px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(160deg,#050d1a 0%,#0a1628 40%,#071420 100%);min-height:100vh;color:var(--white);}
+  header{background:linear-gradient(90deg,#060f20,#0d1f3c,#060f20);border-bottom:2px solid var(--gold);padding:18px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;box-shadow:0 4px 20px rgba(0,0,0,.6);}
+  header h1{font-size:1.4rem;color:var(--gold-light);letter-spacing:.5px;}
+  .subtitle{font-size:.8rem;color:var(--gray);margin-top:2px;}
+  .logo{font-size:2rem;filter:drop-shadow(0 0 8px var(--gold));}
+  .hdr-right{margin-left:auto;display:flex;gap:10px;align-items:center;}
+  .stats-bar{display:flex;gap:12px;flex-wrap:wrap;padding:14px 24px;background:rgba(10,22,40,.6);border-bottom:1px solid var(--card-border);}
+  .stat-chip{background:var(--card-bg);border:1px solid var(--card-border);border-radius:20px;padding:5px 14px;font-size:.82rem;display:flex;align-items:center;gap:6px;}
+  .stat-chip .val{color:var(--gold-light);font-weight:700;}
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;padding:14px 24px;background:rgba(8,18,36,.4);border-bottom:1px solid var(--card-border);}
+  .toolbar input,.toolbar select{background:var(--card-bg);border:1px solid var(--card-border);color:var(--white);border-radius:8px;padding:7px 12px;font-size:.85rem;outline:none;transition:border .2s;}
+  .toolbar input:focus,.toolbar select:focus{border-color:var(--ocean-light);}
+  .toolbar input{flex:1;min-width:180px;}
+  main{padding:20px 24px 60px;max-width:1400px;margin:0 auto;}
+  .dest-card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);margin-bottom:22px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.4);}
+  .dest-header{display:flex;align-items:center;gap:12px;padding:14px 18px;background:linear-gradient(90deg,var(--navy3),var(--navy2));cursor:pointer;user-select:none;border-bottom:1px solid var(--card-border);}
+  .dest-header:hover{background:linear-gradient(90deg,#1e4070,#152e55);}
+  .dest-icon{font-size:1.4rem;}.dest-name{font-size:1.15rem;font-weight:700;color:var(--gold-light);letter-spacing:.3px;}
+  .dest-pax-total{background:rgba(200,168,75,.15);border:1px solid var(--gold);color:var(--gold-light);border-radius:14px;padding:3px 11px;font-size:.78rem;font-weight:600;}
+  .dest-count{background:rgba(30,95,168,.2);border:1px solid var(--ocean);color:#7eb8f7;border-radius:14px;padding:3px 11px;font-size:.78rem;}
+  .collapse-btn{margin-left:auto;color:var(--gray);font-size:1rem;transition:transform .25s;}
+  .collapsed .collapse-btn{transform:rotate(-90deg);}
+  .dest-body{overflow-x:auto;}
+  .ships-table{width:100%;border-collapse:collapse;font-size:.88rem;}
+  .ships-table th{background:rgba(10,30,60,.7);color:var(--gray);font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:10px 14px;text-align:left;border-bottom:1px solid var(--card-border);cursor:pointer;white-space:nowrap;}
+  .ships-table th:hover{color:var(--white);}
+  .ships-table th.sorted .si{color:var(--gold-light);opacity:1;}
+  .si{margin-left:4px;opacity:.4;}
+  .ships-table td{padding:10px 14px;border-bottom:1px solid rgba(30,53,96,.4);vertical-align:middle;}
+  .ships-table tr:last-child td{border-bottom:none;}
+  .ships-table tr:hover td{background:rgba(30,80,150,.12);}
+  .badge{display:inline-block;border-radius:12px;padding:3px 10px;font-size:.75rem;font-weight:600;white-space:nowrap;}
+  .b-past{background:rgba(224,64,64,.2);border:1px solid #e04040;color:#f08080;}
+  .b-today{background:rgba(241,196,15,.2);border:1px solid #f1c40f;color:#f5d060;}
+  .b-soon{background:rgba(46,204,113,.2);border:1px solid #2ecc71;color:#6ee0a0;}
+  .b-future{background:rgba(52,152,219,.2);border:1px solid #3498db;color:#80bfee;}
+  .b-big{background:rgba(224,64,64,.2);border:1px solid #c03030;color:#f08080;}
+  .b-med{background:rgba(241,196,15,.15);border:1px solid #c8a020;color:#f0d050;}
+  .b-sml{background:rgba(46,204,113,.15);border:1px solid #27ae60;color:#6ee0a0;}
+  .ship-name{font-weight:600;color:var(--white);}
+  .note-txt{color:var(--gray);font-size:.8rem;}
+  .row-actions{display:flex;gap:6px;}
+  .btn-sm{background:none;border:1px solid var(--card-border);color:var(--gray);border-radius:6px;padding:3px 8px;font-size:.75rem;cursor:pointer;transition:all .15s;}
+  .btn-sm:hover{border-color:var(--ocean-light);color:var(--white);}
+  .btn-del:hover{border-color:var(--red);color:#f08080;}
+  .add-row-btn{display:flex;align-items:center;gap:8px;padding:10px 18px;background:rgba(10,22,40,.5);border-top:1px dashed var(--card-border);cursor:pointer;color:var(--gray);font-size:.83rem;transition:color .2s;}
+  .add-row-btn:hover{color:var(--gold-light);}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:#0d1f3c;border:1px solid var(--ocean);border-radius:14px;padding:28px;width:440px;max-width:96vw;box-shadow:0 20px 60px rgba(0,0,0,.8);}
+  .modal h2{color:var(--gold-light);margin-bottom:18px;font-size:1.1rem;}
+  .fg{margin-bottom:14px;}
+  .fg label{display:block;color:var(--gray);font-size:.8rem;margin-bottom:5px;}
+  .fg input,.fg select{width:100%;background:#060f20;border:1px solid var(--card-border);color:var(--white);border-radius:8px;padding:9px 12px;font-size:.9rem;outline:none;transition:border .2s;}
+  .fg input:focus,.fg select:focus{border-color:var(--ocean-light);}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
+  .btn-pri{background:var(--ocean);border:none;color:#fff;border-radius:8px;padding:9px 20px;font-size:.9rem;cursor:pointer;transition:background .2s;}
+  .btn-pri:hover{background:var(--ocean-light);}
+  .btn-sec{background:none;border:1px solid var(--card-border);color:var(--gray);border-radius:8px;padding:9px 20px;font-size:.9rem;cursor:pointer;}
+  .btn-sec:hover{border-color:var(--gray);color:var(--white);}
+  .no-ships{padding:24px;text-align:center;color:var(--gray);font-size:.9rem;}
+  .btn-hdr{background:rgba(30,95,168,.2);border:1px solid var(--ocean);color:#7eb8f7;border-radius:8px;padding:7px 14px;font-size:.82rem;cursor:pointer;transition:all .2s;}
+  .btn-hdr:hover{background:rgba(30,95,168,.4);color:var(--white);}
+  .btn-danger{background:rgba(224,64,64,.15);border:1px solid var(--red);color:#f08080;}
+  .btn-danger:hover{background:rgba(224,64,64,.3);}
+  ::-webkit-scrollbar{width:6px;height:6px;}
+  ::-webkit-scrollbar-track{background:var(--navy);}
+  ::-webkit-scrollbar-thumb{background:var(--navy3);border-radius:3px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--ocean);}
+  @media(max-width:600px){main{padding:12px;}.stats-bar,.toolbar{padding:10px 12px;}header{padding:12px;}header h1{font-size:1.1rem;}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">⚓</div>
+  <div>
+    <h1>Norwegian Fjords Cruise Tracker 2026</h1>
+    <div class="subtitle">Olden · Hellesylt · Geiranger &mdash; Official port schedules &bull; Ships &ge;5h only</div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-hdr" onclick="resetData()">↺ Reset</button>
+    <button class="btn-hdr btn-danger" onclick="clearCustom()">🗑 Clear custom</button>
+  </div>
+</header>
+<div class="stats-bar" id="statsBar"></div>
+<div class="toolbar">
+  <input type="text" id="searchInput" placeholder="🔍  Search ships…" oninput="renderAll()">
+  <select id="monthFilter" onchange="renderAll()">
+    <option value="">All months</option>
+    <option value="04">April</option><option value="05">May</option>
+    <option value="06">June</option><option value="07">July</option>
+    <option value="08">August</option><option value="09">September</option>
+    <option value="10">October</option><option value="11">November</option>
+  </select>
+  <select id="paxFilter" onchange="renderAll()">
+    <option value="">All sizes</option>
+    <option value="big">Large (&ge;4 000 pax)</option>
+    <option value="medium">Medium (1 500–3 999)</option>
+    <option value="small">Small (&lt;1 500)</option>
+  </select>
+</div>
+<main id="mainContent"></main>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <h2 id="modalTitle">Add Ship</h2>
+    <div class="fg"><label>Destination</label><select id="fDest"></select></div>
+    <div class="fg"><label>Ship Name</label><input type="text" id="fName" placeholder="e.g. MSC EURIBIA"></div>
+    <div class="fg"><label>Arrival Date</label><input type="date" id="fDate"></div>
+    <div class="fg"><label>Passengers (pax)</label><input type="number" id="fPax" placeholder="e.g. 3000" min="0"></div>
+    <div class="fg"><label>Note (times, berth…)</label><input type="text" id="fNote" placeholder="e.g. 08:00–18:00"></div>
+    <div class="modal-actions">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-pri" onclick="saveShip()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const STORAGE_KEY='cruiseTrackerData_v4';
+const TODAY=new Date().toISOString().slice(0,10);
+
+const SEED_DATA=[
+ {id:'d1',name:'Olden',icon:'🏔️',collapsed:false,ships:[
+  {id:'s1',name:"AIDAPERLA",arrival:"2026-04-03",pax:3300,note:"09:30–20:00"},
+  {id:'s2',name:"RENAISSANCE",arrival:"2026-04-05",pax:700,note:"07:00–23:59"},
+  {id:'s3',name:"LE LAPEROUSE",arrival:"2026-04-07",pax:184,note:"12:00–18:00"},
+  {id:'s4',name:"IONA",arrival:"2026-04-07",pax:5200,note:"09:00–18:00"},
+  {id:'s5',name:"ARVIA",arrival:"2026-04-08",pax:5200,note:"08:00–18:00"},
+  {id:'s6',name:"AURORA",arrival:"2026-04-11",pax:1874,note:"08:00–18:00"},
+  {id:'s7',name:"IONA",arrival:"2026-04-14",pax:5200,note:"09:00–18:00"},
+  {id:'s8',name:"AIDAPERLA",arrival:"2026-04-15",pax:3300,note:"08:00–18:00"},
+  {id:'s9',name:"AIDAPRIMA",arrival:"2026-04-17",pax:3300,note:"07:30–17:30"},
+  {id:'s10',name:"BALMORAL",arrival:"2026-04-19",pax:1350,note:"07:00–17:00"},
+  {id:'s11',name:"IONA",arrival:"2026-04-21",pax:5200,note:"09:00–18:00"},
+  {id:'s12',name:"BRITANNIA",arrival:"2026-04-27",pax:3647,note:"08:00–18:00"},
+  {id:'s13',name:"MSC PREZIOSA",arrival:"2026-04-30",pax:3502,note:"08:00–18:00"},
+  {id:'s14',name:"AMBITION",arrival:"2026-05-01",pax:1400,note:"09:00–18:00"},
+  {id:'s15',name:"BRITANNIA",arrival:"2026-05-04",pax:3647,note:"09:00–18:00"},
+  {id:'s16',name:"IONA",arrival:"2026-05-06",pax:5200,note:"08:00–18:00"},
+  {id:'s17',name:"N.G. ENDURANCE",arrival:"2026-05-07",pax:150,note:"07:30–19:00"},
+  {id:'s18',name:"BRITANNIA",arrival:"2026-05-11",pax:3647,note:"09:00–18:00"},
+  {id:'s19',name:"SKY PRINCESS",arrival:"2026-05-12",pax:3660,note:"09:00–18:00"},
+  {id:'s20',name:"CELEBRITY APEX",arrival:"2026-05-12",pax:2910,note:"07:00–17:00"},
+  {id:'s21',name:"IONA",arrival:"2026-05-13",pax:5200,note:"08:00–17:00"},
+  {id:'s22',name:"N.G. ENDURANCE",arrival:"2026-05-18",pax:150,note:"07:00–18:00"},
+  {id:'s23',name:"QUEEN MARY 2",arrival:"2026-05-19",pax:2691,note:"09:00–18:00"},
+  {id:'s24',name:"IONA",arrival:"2026-05-20",pax:5200,note:"08:00–17:00"},
+  {id:'s25',name:"BRITANNIA",arrival:"2026-05-25",pax:3647,note:"09:00–18:00"},
+  {id:'s26',name:"IONA",arrival:"2026-05-26",pax:5200,note:"09:00–18:00"},
+  {id:'s27',name:"SEABOURN OVATION",arrival:"2026-05-26",pax:600,note:"08:00–17:00"},
+  {id:'s28',name:"ROTTERDAM",arrival:"2026-05-27",pax:2668,note:"09:00–19:00"},
+  {id:'s29',name:"SKY PRINCESS",arrival:"2026-05-27",pax:3660,note:"08:00–17:00"},
+  {id:'s30',name:"SEADREAM II",arrival:"2026-05-28",pax:112,note:"08:00–19:00"},
+  {id:'s31',name:"STAR PRIDE",arrival:"2026-05-29",pax:208,note:"10:00–16:00"},
+  {id:'s32',name:"SH DIANA",arrival:"2026-05-29",pax:192,note:"08:00–18:00"},
+  {id:'s33',name:"AIDAMAR",arrival:"2026-05-30",pax:2686,note:"08:00–18:00"},
+  {id:'s34',name:"BOREALIS",arrival:"2026-05-30",pax:1360,note:"07:30–17:30"},
+  {id:'s35',name:"QUEEN MARY 2",arrival:"2026-05-30",pax:2691,note:"07:30–17:30"},
+  {id:'s36',name:"BOLETTE",arrival:"2026-06-01",pax:1400,note:"08:00–18:00"},
+  {id:'s37',name:"MEIN SCHIFF 3",arrival:"2026-06-01",pax:2506,note:"08:00–19:00"},
+  {id:'s38',name:"SEA SPIRIT",arrival:"2026-06-01",pax:114,note:"13:30–20:00"},
+  {id:'s39',name:"LE LAPEROUSE",arrival:"2026-06-02",pax:184,note:"13:30–18:30"},
+  {id:'s40',name:"AURORA",arrival:"2026-06-05",pax:1874,note:"08:00–19:00"},
+  {id:'s41',name:"WORLD VOYAGER",arrival:"2026-06-06",pax:200,note:"10:00–20:00"},
+  {id:'s42',name:"LE LAPEROUSE",arrival:"2026-06-07",pax:184,note:"07:00–12:00"},
+  {id:'s43',name:"IONA",arrival:"2026-06-09",pax:5200,note:"09:00–18:00"},
+  {id:'s44',name:"SEADREAM II",arrival:"2026-06-09",pax:112,note:"08:00–16:00"},
+  {id:'s45',name:"CELEBRITY APEX",arrival:"2026-06-10",pax:2910,note:"07:00–15:00"},
+  {id:'s46',name:"AMERA",arrival:"2026-06-14",pax:830,note:"08:00–18:00"},
+  {id:'s47',name:"LE LAPEROUSE",arrival:"2026-06-15",pax:184,note:"13:00–19:00"},
+  {id:'s48',name:"IONA",arrival:"2026-06-16",pax:5200,note:"09:00–18:00"},
+  {id:'s49',name:"SILVER DAWN",arrival:"2026-06-17",pax:596,note:"08:00–17:00"},
+  {id:'s50',name:"CELEBRITY ECLIPSE",arrival:"2026-06-17",pax:2850,note:"07:00–17:00"},
+  {id:'s51',name:"SKY PRINCESS",arrival:"2026-06-18",pax:3660,note:"08:00–16:00"},
+  {id:'s52',name:"SEADREAM II",arrival:"2026-06-19",pax:112,note:"08:00–19:00"},
+  {id:'s53',name:"MAJESTIC PRINCESS",arrival:"2026-06-19",pax:3560,note:"10:00–19:00"},
+  {id:'s54',name:"BALMORAL",arrival:"2026-06-20",pax:1350,note:"08:00–18:00"},
+  {id:'s55',name:"LE LAPEROUSE",arrival:"2026-06-21",pax:184,note:"07:00–13:00"},
+  {id:'s56',name:"BOREALIS",arrival:"2026-06-21",pax:1360,note:"07:30–17:30"},
+  {id:'s57',name:"IONA",arrival:"2026-06-23",pax:5200,note:"09:00–18:00"},
+  {id:'s58',name:"SEABOURN OVATION",arrival:"2026-06-23",pax:600,note:"08:00–17:00"},
+  {id:'s59',name:"QUEEN ANNE",arrival:"2026-06-24",pax:3000,note:"08:00–17:00"},
+  {id:'s60',name:"ROTTERDAM",arrival:"2026-06-24",pax:2668,note:"07:00–16:00"},
+  {id:'s61',name:"STAR LEGEND",arrival:"2026-06-25",pax:212,note:"12:00–18:00"},
+  {id:'s62',name:"LE CHAMPLAIN",arrival:"2026-06-26",pax:184,note:"12:30–18:30"},
+  {id:'s63',name:"SILVER DAWN",arrival:"2026-06-27",pax:596,note:"08:00–17:00"},
+  {id:'s64',name:"AMBIENCE",arrival:"2026-06-28",pax:1400,note:"08:00–18:00"},
+  {id:'s65',name:"BRITANNIA",arrival:"2026-06-29",pax:3647,note:"09:00–18:00"},
+  {id:'s66',name:"LE LAPEROUSE",arrival:"2026-06-29",pax:184,note:"13:30–19:00"},
+  {id:'s67',name:"IONA",arrival:"2026-06-30",pax:5200,note:"09:00–18:00"},
+  {id:'s68',name:"AZAMARA QUEST",arrival:"2026-06-30",pax:694,note:"08:00–20:00"},
+  {id:'s69',name:"SEADREAM II",arrival:"2026-07-01",pax:112,note:"08:00–16:00"},
+  {id:'s70',name:"SKY PRINCESS",arrival:"2026-07-01",pax:3660,note:"09:00–18:00"},
+  {id:'s71',name:"BOLETTE",arrival:"2026-07-02",pax:1400,note:"07:30–17:30"},
+  {id:'s72',name:"AIDASOL",arrival:"2026-07-02",pax:2686,note:"10:00–20:00"},
+  {id:'s73',name:"MSC PREZIOSA",arrival:"2026-07-03",pax:3502,note:"08:00–18:00"},
+  {id:'s74',name:"AURORA",arrival:"2026-07-05",pax:1874,note:"08:00–18:00"},
+  {id:'s75',name:"IONA",arrival:"2026-07-07",pax:5200,note:"09:00–18:00"},
+  {id:'s76',name:"QUEEN ANNE",arrival:"2026-07-08",pax:3000,note:"09:00–19:00"},
+  {id:'s77',name:"ROTTERDAM",arrival:"2026-07-08",pax:2668,note:"09:00–19:00"},
+  {id:'s78',name:"ARCADIA",arrival:"2026-07-09",pax:1950,note:"08:00–18:00"},
+  {id:'s79',name:"SEADREAM II",arrival:"2026-07-11",pax:112,note:"08:00–19:00"},
+  {id:'s80',name:"IONA",arrival:"2026-07-14",pax:5200,note:"08:00–18:00"},
+  {id:'s81',name:"SKY PRINCESS",arrival:"2026-07-15",pax:3660,note:"08:00–17:00"},
+  {id:'s82',name:"HEBRIDEAN SKY",arrival:"2026-07-16",pax:114,note:"08:30–18:30"},
+  {id:'s83',name:"LIBERTY OF THE SEAS",arrival:"2026-07-16",pax:3634,note:"07:00–16:00"},
+  {id:'s84',name:"BALMORAL",arrival:"2026-07-18",pax:1350,note:"07:30–17:00"},
+  {id:'s85',name:"CELEBRITY APEX",arrival:"2026-07-20",pax:2910,note:"07:00–16:00"},
+  {id:'s86',name:"IONA",arrival:"2026-07-21",pax:5200,note:"09:00–18:00"},
+  {id:'s87',name:"SILVER DAWN",arrival:"2026-07-21",pax:596,note:"08:00–17:00"},
+  {id:'s88',name:"AMBITION",arrival:"2026-07-22",pax:1400,note:"08:00–18:00"},
+  {id:'s89',name:"SEADREAM II",arrival:"2026-07-23",pax:112,note:"08:00–16:00"},
+  {id:'s90',name:"IONA",arrival:"2026-07-28",pax:5200,note:"08:00–18:00"},
+  {id:'s91',name:"HEBRIDEAN SKY",arrival:"2026-07-28",pax:114,note:"07:30–17:30"},
+  {id:'s92',name:"STAR PRIDE",arrival:"2026-07-29",pax:208,note:"10:00–16:00"},
+  {id:'s93',name:"CELEBRITY ECLIPSE",arrival:"2026-07-29",pax:2850,note:"08:00–18:00"},
+  {id:'s94',name:"ROTTERDAM",arrival:"2026-07-30",pax:2668,note:"07:00–16:00"},
+  {id:'s95',name:"SILVER DAWN",arrival:"2026-07-31",pax:596,note:"08:00–17:00"},
+  {id:'s96',name:"EUROPA",arrival:"2026-08-02",pax:408,note:"08:00–17:00"},
+  {id:'s97',name:"BOLETTE",arrival:"2026-08-03",pax:1400,note:"07:30–17:30"},
+  {id:'s98',name:"SEADREAM II",arrival:"2026-08-03",pax:112,note:"07:00–16:00"},
+  {id:'s99',name:"IONA",arrival:"2026-08-04",pax:5200,note:"09:00–18:00"},
+  {id:'s100',name:"SEADREAM II",arrival:"2026-08-05",pax:112,note:"10:00–22:00"},
+  {id:'s101',name:"SKY PRINCESS",arrival:"2026-08-05",pax:3660,note:"09:00–17:00"},
+  {id:'s102',name:"DISNEY DREAM",arrival:"2026-08-06",pax:4000,note:"06:45–17:00"},
+  {id:'s103',name:"QUEEN MARY 2",arrival:"2026-08-07",pax:2691,note:"08:00–18:00"},
+  {id:'s104',name:"AURORA",arrival:"2026-08-10",pax:1874,note:"08:00–19:00"},
+  {id:'s105',name:"ROTTERDAM",arrival:"2026-08-13",pax:2668,note:"08:00–18:00"},
+  {id:'s106',name:"SEADREAM II",arrival:"2026-08-17",pax:112,note:"07:00–16:00"},
+  {id:'s107',name:"IONA",arrival:"2026-08-18",pax:5200,note:"09:00–18:00"},
+  {id:'s108',name:"LIBERTY OF THE SEAS",arrival:"2026-08-19",pax:3634,note:"09:00–18:00"},
+  {id:'s109',name:"MSC PREZIOSA",arrival:"2026-08-20",pax:3502,note:"08:00–18:00"},
+  {id:'s110',name:"EXPLORA III",arrival:"2026-08-21",pax:922,note:"09:00–18:00"},
+  {id:'s111',name:"BOLETTE",arrival:"2026-08-23",pax:1400,note:"07:00–17:00"},
+  {id:'s112',name:"BOREALIS",arrival:"2026-08-23",pax:1360,note:"07:00–16:00"},
+  {id:'s113',name:"SILVER DAWN",arrival:"2026-08-24",pax:596,note:"08:00–17:00"},
+  {id:'s114',name:"SEVEN SEAS MARINER",arrival:"2026-08-24",pax:700,note:"11:00–20:00"},
+  {id:'s115',name:"IONA",arrival:"2026-08-25",pax:5200,note:"09:00–18:00"},
+  {id:'s116',name:"BALMORAL",arrival:"2026-08-31",pax:1350,note:"07:00–17:00"},
+  {id:'s117',name:"AMBITION",arrival:"2026-08-31",pax:1400,note:"13:00–23:00"},
+  {id:'s118',name:"MSC VIRTUOSA",arrival:"2026-09-01",pax:6334,note:"09:00–18:00"},
+  {id:'s119',name:"CELEBRITY APEX",arrival:"2026-09-02",pax:2910,note:"07:00–16:00"},
+  {id:'s120',name:"SILVER DAWN",arrival:"2026-09-03",pax:596,note:"08:00–17:00"},
+  {id:'s121',name:"ARVIA",arrival:"2026-09-03",pax:5200,note:"08:00–17:00"},
+  {id:'s122',name:"BOLETTE",arrival:"2026-09-06",pax:1400,note:"07:30–16:30"},
+  {id:'s123',name:"COSTA DIADEMA",arrival:"2026-09-08",pax:3724,note:"09:00–16:00"},
+  {id:'s124',name:"IONA",arrival:"2026-09-09",pax:5200,note:"08:00–18:00"},
+  {id:'s125',name:"ARVIA",arrival:"2026-09-10",pax:5200,note:"09:00–18:00"},
+  {id:'s126',name:"BRITANNIA",arrival:"2026-09-14",pax:3647,note:"08:00–18:00"},
+  {id:'s127',name:"IONA",arrival:"2026-09-16",pax:5200,note:"08:00–18:00"},
+  {id:'s128',name:"BRITANNIA",arrival:"2026-09-21",pax:3647,note:"08:00–17:00"},
+  {id:'s129',name:"IONA",arrival:"2026-09-23",pax:5200,note:"08:00–18:00"},
+  {id:'s130',name:"NIEUW STATENDAM",arrival:"2026-09-26",pax:2666,note:"07:00–16:00"},
+  {id:'s131',name:"BRITANNIA",arrival:"2026-09-28",pax:3647,note:"08:00–17:00"},
+  {id:'s132',name:"IONA",arrival:"2026-09-29",pax:5200,note:"09:00–18:00"},
+  {id:'s133',name:"ROTTERDAM",arrival:"2026-09-30",pax:2668,note:"08:00–18:00"},
+  {id:'s134',name:"BRITANNIA",arrival:"2026-10-07",pax:3647,note:"09:00–18:00"},
+  {id:'s135',name:"NIEUW STATENDAM",arrival:"2026-11-03",pax:2666,note:"10:00–19:00"}
+ ]},
+ {id:'d2',name:'Hellesylt',icon:'🌊',collapsed:false,ships:[
+  {id:'s255',name:"MSC EURIBIA",arrival:"2026-05-05",pax:6334,note:"09:00–21:00"},
+  {id:'s256',name:"MSC EURIBIA",arrival:"2026-05-12",pax:6334,note:"09:00–21:00"},
+  {id:'s257',name:"MSC EURIBIA",arrival:"2026-05-19",pax:6334,note:"09:00–21:00"},
+  {id:'s258',name:"IONA",arrival:"2026-05-27",pax:5200,note:"07:00–16:30"},
+  {id:'s259',name:"IONA",arrival:"2026-06-10",pax:5200,note:"07:00–16:30"},
+  {id:'s260',name:"MSC VIRTUOSA",arrival:"2026-06-17",pax:6334,note:"07:00–19:00"},
+  {id:'s261',name:"RENAISSANCE",arrival:"2026-06-29",pax:700,note:"14:00–20:00"},
+  {id:'s262',name:"IONA",arrival:"2026-07-01",pax:5200,note:"07:00–16:30"},
+  {id:'s263',name:"IONA",arrival:"2026-07-08",pax:5200,note:"07:00–16:30"},
+  {id:'s264',name:"MSC VIRTUOSA",arrival:"2026-07-15",pax:6334,note:"08:00–20:00"},
+  {id:'s265',name:"IONA",arrival:"2026-07-22",pax:5200,note:"07:00–16:30"},
+  {id:'s266',name:"IONA",arrival:"2026-08-05",pax:5200,note:"07:00–16:30"},
+  {id:'s267',name:"IONA",arrival:"2026-08-19",pax:5200,note:"07:00–16:30"},
+  {id:'s268',name:"MSC EURIBIA",arrival:"2026-10-06",pax:6334,note:"09:00–21:00"}
+ ]},
+ {id:'d3',name:'Geiranger',icon:'⛰️',collapsed:false,ships:[
+  {id:'s136',name:"AIDAPRIMA",arrival:"2026-04-15",pax:3300,note:"11:30–20:30"},
+  {id:'s137',name:"AIDANOVA",arrival:"2026-04-21",pax:6600,note:"10:00–20:00"},
+  {id:'s138',name:"AIDAPRIMA",arrival:"2026-04-24",pax:3300,note:"11:00–21:00"},
+  {id:'s139',name:"RENAISSANCE",arrival:"2026-04-30",pax:700,note:"13:00–21:00"},
+  {id:'s140',name:"CELEBRITY APEX",arrival:"2026-05-11",pax:2910,note:"09:00–18:00"},
+  {id:'s141',name:"RENAISSANCE",arrival:"2026-05-14",pax:700,note:"12:00–22:00"},
+  {id:'s142',name:"AIDAPRIMA",arrival:"2026-05-17",pax:3300,note:"11:00–20:00"},
+  {id:'s143',name:"AIDAPRIMA",arrival:"2026-05-24",pax:3300,note:"11:00–21:00"},
+  {id:'s144',name:"MSC EURIBIA",arrival:"2026-05-26",pax:6334,note:"11:00–21:00"},
+  {id:'s145',name:"MEIN SCHIFF RELAX",arrival:"2026-05-27",pax:4100,note:"08:30–18:30"},
+  {id:'s146',name:"VASCO DA GAMA",arrival:"2026-05-29",pax:1200,note:"11:00–19:00"},
+  {id:'s147',name:"SH DIANA",arrival:"2026-05-30",pax:192,note:"08:00–18:00"},
+  {id:'s148',name:"COSTA DIADEMA",arrival:"2026-06-01",pax:3724,note:"11:30–19:30"},
+  {id:'s149',name:"MSC EURIBIA",arrival:"2026-06-02",pax:6334,note:"11:00–21:00"},
+  {id:'s150',name:"COSTA FAVOLOSA",arrival:"2026-06-04",pax:3780,note:"11:30–20:00"},
+  {id:'s151',name:"SH DIANA",arrival:"2026-06-05",pax:192,note:"08:00–14:00"},
+  {id:'s152',name:"LE LAPEROUSE",arrival:"2026-06-06",pax:184,note:"07:30–13:00"},
+  {id:'s153',name:"ARTANIA",arrival:"2026-06-06",pax:1200,note:"07:00–13:00"},
+  {id:'s154',name:"COSTA DIADEMA",arrival:"2026-06-08",pax:3724,note:"11:30–19:30"},
+  {id:'s155',name:"MSC EURIBIA",arrival:"2026-06-09",pax:6334,note:"11:00–21:00"},
+  {id:'s156',name:"MEIN SCHIFF 7",arrival:"2026-06-11",pax:4100,note:"08:30–18:30"},
+  {id:'s157',name:"COSTA FAVOLOSA",arrival:"2026-06-13",pax:3780,note:"11:30–20:00"},
+  {id:'s158',name:"COSTA DIADEMA",arrival:"2026-06-15",pax:3724,note:"11:30–19:30"},
+  {id:'s159',name:"MSC EURIBIA",arrival:"2026-06-16",pax:6334,note:"11:00–21:00"},
+  {id:'s160',name:"CELEBRITY APEX",arrival:"2026-06-17",pax:2910,note:"07:00–15:00"},
+  {id:'s161',name:"MEIN SCHIFF 7",arrival:"2026-06-18",pax:4100,note:"08:30–18:30"},
+  {id:'s162',name:"LE LAPEROUSE",arrival:"2026-06-20",pax:184,note:"07:30–13:00"},
+  {id:'s163',name:"COSTA DIADEMA",arrival:"2026-06-22",pax:3724,note:"11:30–19:30"},
+  {id:'s164',name:"MSC EURIBIA",arrival:"2026-06-23",pax:6334,note:"11:00–21:00"},
+  {id:'s165',name:"CELEBRITY APEX",arrival:"2026-06-24",pax:2910,note:"08:00–17:00"},
+  {id:'s166',name:"AIDAPRIMA",arrival:"2026-06-28",pax:3300,note:"08:00–18:00"},
+  {id:'s167',name:"AMERA",arrival:"2026-06-28",pax:830,note:"08:00–18:00"},
+  {id:'s168',name:"COSTA DIADEMA",arrival:"2026-06-29",pax:3724,note:"11:30–19:30"},
+  {id:'s169',name:"MSC EURIBIA",arrival:"2026-06-30",pax:6334,note:"11:00–21:00"},
+  {id:'s170',name:"LE CHAMPLAIN",arrival:"2026-06-30",pax:184,note:"12:30–19:00"},
+  {id:'s171',name:"CELEBRITY APEX",arrival:"2026-07-01",pax:2910,note:"07:00–16:00"},
+  {id:'s172',name:"AMBIENCE",arrival:"2026-07-01",pax:1400,note:"09:00–20:00"},
+  {id:'s173',name:"MEIN SCHIFF 7",arrival:"2026-07-02",pax:4100,note:"08:30–18:30"},
+  {id:'s174',name:"COSTA FAVOLOSA",arrival:"2026-07-04",pax:3780,note:"11:30–20:00"},
+  {id:'s175',name:"VIKING MIRA",arrival:"2026-07-04",pax:930,note:"08:00–18:00"},
+  {id:'s176',name:"AMERA",arrival:"2026-07-05",pax:830,note:"07:00–13:00"},
+  {id:'s177',name:"AIDAPRIMA",arrival:"2026-07-05",pax:3300,note:"11:00–21:00"},
+  {id:'s178',name:"COSTA DIADEMA",arrival:"2026-07-06",pax:3724,note:"11:30–19:30"},
+  {id:'s179',name:"EUROPA 2",arrival:"2026-07-07",pax:516,note:"07:00–17:00"},
+  {id:'s180',name:"MSC EURIBIA",arrival:"2026-07-07",pax:6334,note:"11:00–21:00"},
+  {id:'s181',name:"CELEBRITY APEX",arrival:"2026-07-08",pax:2910,note:"07:00–15:00"},
+  {id:'s182',name:"VIKING VELA",arrival:"2026-07-08",pax:930,note:"08:00–17:00"},
+  {id:'s183',name:"VIKING MIRA",arrival:"2026-07-10",pax:930,note:"08:00–18:00"},
+  {id:'s184',name:"MEIN SCHIFF 1",arrival:"2026-07-11",pax:2790,note:"08:00–18:00"},
+  {id:'s185',name:"EVRIMA",arrival:"2026-07-13",pax:298,note:"07:00–16:00"},
+  {id:'s186',name:"COSTA DIADEMA",arrival:"2026-07-13",pax:3724,note:"11:30–19:30"},
+  {id:'s187',name:"MSC EURIBIA",arrival:"2026-07-14",pax:6334,note:"11:00–21:00"},
+  {id:'s188',name:"AIDANOVA",arrival:"2026-07-15",pax:6600,note:"08:00–18:00"},
+  {id:'s189',name:"AIDAPRIMA",arrival:"2026-07-16",pax:3300,note:"08:00–18:00"},
+  {id:'s190',name:"MEIN SCHIFF 1",arrival:"2026-07-17",pax:2790,note:"08:30–18:30"},
+  {id:'s191',name:"COSTA DIADEMA",arrival:"2026-07-20",pax:3724,note:"11:30–19:30"},
+  {id:'s192',name:"MSC EURIBIA",arrival:"2026-07-21",pax:6334,note:"11:00–21:00"},
+  {id:'s193',name:"MEIN SCHIFF RELAX",arrival:"2026-07-22",pax:4100,note:"08:00–18:00"},
+  {id:'s194',name:"ARTANIA",arrival:"2026-07-24",pax:1200,note:"07:00–13:00"},
+  {id:'s195',name:"SCENIC ECLIPSE 1",arrival:"2026-07-25",pax:228,note:"12:00–18:00"},
+  {id:'s196',name:"SPIRIT OF DISCOVERY",arrival:"2026-07-26",pax:999,note:"08:00–17:00"},
+  {id:'s197',name:"AMERA",arrival:"2026-07-26",pax:830,note:"12:00–20:00"},
+  {id:'s198',name:"COSTA DIADEMA",arrival:"2026-07-27",pax:3724,note:"11:30–19:30"},
+  {id:'s199',name:"MSC EURIBIA",arrival:"2026-07-28",pax:6334,note:"11:00–21:00"},
+  {id:'s200',name:"VIKING SATURN",arrival:"2026-07-29",pax:930,note:"08:00–18:00"},
+  {id:'s201',name:"MEIN SCHIFF RELAX",arrival:"2026-07-29",pax:4100,note:"08:30–18:30"},
+  {id:'s202',name:"VIKING NEPTUNE",arrival:"2026-07-30",pax:930,note:"08:00–17:00"},
+  {id:'s203',name:"MEIN SCHIFF 7",arrival:"2026-07-30",pax:4100,note:"08:30–18:30"},
+  {id:'s204',name:"MEIN SCHIFF 1",arrival:"2026-08-02",pax:2790,note:"08:00–18:00"},
+  {id:'s205',name:"EVRIMA",arrival:"2026-08-03",pax:298,note:"08:00–16:00"},
+  {id:'s206',name:"COSTA DIADEMA",arrival:"2026-08-03",pax:3724,note:"11:30–19:30"},
+  {id:'s207',name:"MSC EURIBIA",arrival:"2026-08-04",pax:6334,note:"11:00–21:00"},
+  {id:'s208',name:"AIDAPRIMA",arrival:"2026-08-09",pax:3300,note:"08:00–18:00"},
+  {id:'s209',name:"SEVEN SEAS GRANDEUR",arrival:"2026-08-09",pax:750,note:"08:00–18:00"},
+  {id:'s210',name:"COSTA DIADEMA",arrival:"2026-08-10",pax:3724,note:"11:30–19:30"},
+  {id:'s211',name:"MSC EURIBIA",arrival:"2026-08-11",pax:6334,note:"11:00–19:00"},
+  {id:'s212',name:"AIDANOVA",arrival:"2026-08-12",pax:6600,note:"07:00–16:00"},
+  {id:'s213',name:"VIKING SATURN",arrival:"2026-08-14",pax:930,note:"08:00–18:00"},
+  {id:'s214',name:"AIDAPRIMA",arrival:"2026-08-16",pax:3300,note:"10:00–20:00"},
+  {id:'s215',name:"COSTA DIADEMA",arrival:"2026-08-17",pax:3724,note:"11:30–19:30"},
+  {id:'s216',name:"MSC EURIBIA",arrival:"2026-08-18",pax:6334,note:"11:00–21:00"},
+  {id:'s217',name:"MEIN SCHIFF RELAX",arrival:"2026-08-19",pax:4100,note:"08:00–18:00"},
+  {id:'s218',name:"MEIN SCHIFF 1",arrival:"2026-08-20",pax:2790,note:"08:30–18:30"},
+  {id:'s219',name:"COSTA FAVOLOSA",arrival:"2026-08-22",pax:3780,note:"11:30–19:00"},
+  {id:'s220',name:"VIKING MIRA",arrival:"2026-08-23",pax:930,note:"08:00–18:00"},
+  {id:'s221',name:"COSTA DIADEMA",arrival:"2026-08-24",pax:3724,note:"11:30–19:30"},
+  {id:'s222',name:"MSC EURIBIA",arrival:"2026-08-25",pax:6334,note:"11:00–21:00"},
+  {id:'s223',name:"CELEBRITY APEX",arrival:"2026-08-26",pax:2910,note:"07:00–15:00"},
+  {id:'s224',name:"AIDAPRIMA",arrival:"2026-08-27",pax:3300,note:"10:00–20:00"},
+  {id:'s225',name:"COSTA FAVOLOSA",arrival:"2026-08-28",pax:3780,note:"11:30–19:30"},
+  {id:'s226',name:"VIKING VELA",arrival:"2026-08-29",pax:930,note:"08:00–17:00"},
+  {id:'s227',name:"COSTA DIADEMA",arrival:"2026-08-31",pax:3724,note:"11:30–19:30"},
+  {id:'s228',name:"MSC EURIBIA",arrival:"2026-09-01",pax:6334,note:"11:00–21:00"},
+  {id:'s229',name:"MEIN SCHIFF RELAX",arrival:"2026-09-02",pax:4100,note:"08:30–18:30"},
+  {id:'s230',name:"AMADEA",arrival:"2026-09-02",pax:600,note:"08:00–18:00"},
+  {id:'s231',name:"COSTA FAVOLOSA",arrival:"2026-09-06",pax:3780,note:"11:30–20:00"},
+  {id:'s232',name:"COSTA DIADEMA",arrival:"2026-09-07",pax:3724,note:"11:30–19:30"},
+  {id:'s233',name:"MSC EURIBIA",arrival:"2026-09-08",pax:6334,note:"11:00–21:00"},
+  {id:'s234',name:"CELEBRITY APEX",arrival:"2026-09-09",pax:2910,note:"07:00–16:00"},
+  {id:'s235',name:"VIKING MIRA",arrival:"2026-09-09",pax:930,note:"08:00–18:00"},
+  {id:'s236',name:"MEIN SCHIFF 7",arrival:"2026-09-10",pax:4100,note:"08:30–18:30"},
+  {id:'s237',name:"AIDAPRIMA",arrival:"2026-09-11",pax:3300,note:"07:00–16:00"},
+  {id:'s238',name:"SEVEN SEAS GRANDEUR",arrival:"2026-09-12",pax:750,note:"10:00–18:00"},
+  {id:'s239',name:"HANSEATIC NATURE",arrival:"2026-09-13",pax:230,note:"13:00–19:00"},
+  {id:'s240',name:"MSC EURIBIA",arrival:"2026-09-15",pax:6334,note:"11:00–21:00"},
+  {id:'s241',name:"COSTA FAVOLOSA",arrival:"2026-09-17",pax:3780,note:"11:30–18:30"},
+  {id:'s242',name:"AIDAPRIMA",arrival:"2026-09-18",pax:3300,note:"08:00–18:00"},
+  {id:'s243',name:"SPIRIT OF ADVENTURE",arrival:"2026-09-18",pax:999,note:"08:00–17:00"},
+  {id:'s244',name:"MSC EURIBIA",arrival:"2026-09-22",pax:6334,note:"11:00–21:00"},
+  {id:'s245',name:"AIDANOVA",arrival:"2026-09-23",pax:6600,note:"07:00–16:00"},
+  {id:'s246',name:"AIDAPRIMA",arrival:"2026-09-28",pax:3300,note:"08:00–16:00"},
+  {id:'s247',name:"MSC EURIBIA",arrival:"2026-09-29",pax:6334,note:"11:00–21:00"},
+  {id:'s248',name:"COSTA FAVOLOSA",arrival:"2026-09-30",pax:3780,note:"11:30–20:00"},
+  {id:'s249',name:"AIDANOVA",arrival:"2026-10-07",pax:6600,note:"08:00–18:00"},
+  {id:'s250',name:"VASCO DA GAMA",arrival:"2026-10-08",pax:1200,note:"07:00–14:00"},
+  {id:'s251',name:"AIDANOVA",arrival:"2026-10-20",pax:6600,note:"11:00–21:00"},
+  {id:'s252',name:"VASCO DA GAMA",arrival:"2026-10-22",pax:1200,note:"10:00–20:00"},
+  {id:'s253',name:"AIDANOVA",arrival:"2026-11-03",pax:6600,note:"11:00–21:00"},
+  {id:'s254',name:"LE COMMANDANT CHARCOT",arrival:"2026-11-07",pax:270,note:"06:00–15:30"}
+ ]}
+];
+
+let state=loadData();
+let editShipId=null,editDestId=null;
+let sortCfg={};
+
+function loadData(){
+  try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));return(s&&Array.isArray(s)&&s.length>0)?s:clone(SEED_DATA);}
+  catch{return clone(SEED_DATA);}
+}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state));}
+function clone(x){return JSON.parse(JSON.stringify(x));}
+function uid(){return'u'+Date.now()+Math.random().toString(36).slice(2,6);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+function resetData(){
+  if(!confirm('Reset to official schedule? Custom additions will be lost.'))return;
+  state=clone(SEED_DATA);save();renderAll();
+}
+function clearCustom(){
+  const ids=new Set(SEED_DATA.flatMap(d=>d.ships.map(s=>s.id)));
+  state.forEach(d=>{d.ships=d.ships.filter(s=>ids.has(s.id));});
+  save();renderAll();
+}
+
+function dateBadge(a){
+  if(a<TODAY)return`<span class="badge b-past">Past</span>`;
+  if(a===TODAY)return`<span class="badge b-today">Today</span>`;
+  const d=Math.round((new Date(a)-new Date(TODAY))/86400000);
+  if(d<=7)return`<span class="badge b-soon">${d}d</span>`;
+  const dt=new Date(a);
+  return`<span class="badge b-future">${dt.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</span>`;
+}
+function paxBadge(p){
+  if(!p)return`<span class="badge" style="color:#555;border:1px solid #333">—</span>`;
+  const f=p>=1000?(p/1000).toFixed(1)+'k':p;
+  if(p>=4000)return`<span class="badge b-big">🔴 ${f}</span>`;
+  if(p>=1500)return`<span class="badge b-med">🟡 ${f}</span>`;
+  return`<span class="badge b-sml">🟢 ${f}</span>`;
+}
+function fmtPax(n){return n>=1000000?(n/1000000).toFixed(2)+'M':n>=1000?Math.round(n/1000)+'k':n;}
+function totalPax(ships){return ships.reduce((a,s)=>a+(s.pax||0),0);}
+
+function filterShips(ships){
+  const q=(document.getElementById('searchInput')?.value||'').toLowerCase();
+  const mo=document.getElementById('monthFilter')?.value||'';
+  const pf=document.getElementById('paxFilter')?.value||'';
+  return ships.filter(s=>{
+    if(q&&!s.name.toLowerCase().includes(q))return false;
+    if(mo&&s.arrival.slice(5,7)!==mo)return false;
+    if(pf==='big'&&s.pax<4000)return false;
+    if(pf==='medium'&&(s.pax<1500||s.pax>=4000))return false;
+    if(pf==='small'&&s.pax>=1500)return false;
+    return true;
+  });
+}
+
+function sortShips(ships,did){
+  const c=sortCfg[did]||{col:'arrival',dir:1};
+  return[...ships].sort((a,b)=>{
+    let va=a[c.col],vb=b[c.col];
+    if(typeof va==='string'){va=va.toLowerCase();vb=vb.toLowerCase();}
+    return va<vb?-c.dir:va>vb?c.dir:0;
+  });
+}
+function toggleSort(did,col){
+  const c=sortCfg[did]||{col:'arrival',dir:1};
+  sortCfg[did]={col,dir:c.col===col?-c.dir:1};
+  renderAll();
+}
+function si(did,col){
+  const c=sortCfg[did];
+  if(!c||c.col!==col)return`<span class="si">↕</span>`;
+  return`<span class="si">${c.dir===1?'↑':'↓'}</span>`;
+}
+
+function renderAll(){
+  renderStats();
+  document.getElementById('mainContent').innerHTML=state.map(d=>renderDest(d)).join('');
+}
+
+function renderStats(){
+  const all=state.flatMap(d=>d.ships);
+  const tp=totalPax(all);
+  document.getElementById('statsBar').innerHTML=`
+    <div class="stat-chip">⚓ Total: <span class="val">${all.length}</span></div>
+    <div class="stat-chip">📅 Upcoming: <span class="val">${all.filter(s=>s.arrival>=TODAY).length}</span></div>
+    <div class="stat-chip">🌊 In port today: <span class="val">${all.filter(s=>s.arrival===TODAY).length}</span></div>
+    <div class="stat-chip">🗺️ Destinations: <span class="val">${state.length}</span></div>
+    <div class="stat-chip">👥 Total pax: <span class="val">${fmtPax(tp)}</span></div>`;
+}
+
+function renderDest(d){
+  const f=filterShips(d.ships);
+  const sorted=sortShips(f,d.id);
+  const pt=totalPax(f);
+  const cc=d.collapsed?'collapsed':'';
+  const thc=col=>col===(sortCfg[d.id]||{}).col?'sorted':'';
+  let rows='';
+  if(!d.collapsed){
+    if(!sorted.length){rows=`<tr><td colspan="5" class="no-ships">No ships match the current filters.</td></tr>`;}
+    else{rows=sorted.map(s=>`<tr>
+      <td>${dateBadge(s.arrival)}</td>
+      <td class="ship-name">${esc(s.name)}</td>
+      <td>${paxBadge(s.pax)}</td>
+      <td class="note-txt">${esc(s.note||'')}</td>
+      <td><div class="row-actions">
+        <button class="btn-sm" onclick="openEdit('${esc(d.id)}','${esc(s.id)}')">✏️</button>
+        <button class="btn-sm btn-del" onclick="delShip('${esc(d.id)}','${esc(s.id)}')">✕</button>
+      </div></td>
+    </tr>`).join('');}
+  }
+  return`<div class="dest-card" id="dc-${esc(d.id)}">
+    <div class="dest-header ${cc}" onclick="toggleCol('${esc(d.id)}')">
+      <span class="dest-icon">${d.icon||'⚓'}</span>
+      <span class="dest-name">${esc(d.name)}</span>
+      <span class="dest-count">${f.length} ship${f.length!==1?'s':''}</span>
+      <span class="dest-pax-total">👥 ${fmtPax(pt)} pax</span>
+      <span class="collapse-btn">▼</span>
+    </div>
+    ${!d.collapsed?`<div class="dest-body">
+      <table class="ships-table"><thead><tr>
+        <th class="${thc('arrival')}" onclick="toggleSort('${esc(d.id)}','arrival')">Date ${si(d.id,'arrival')}</th>
+        <th class="${thc('name')}" onclick="toggleSort('${esc(d.id)}','name')">Ship ${si(d.id,'name')}</th>
+        <th class="${thc('pax')}" onclick="toggleSort('${esc(d.id)}','pax')">Pax ${si(d.id,'pax')}</th>
+        <th>Schedule</th><th></th>
+      </tr></thead><tbody>${rows}</tbody></table>
+      <div class="add-row-btn" onclick="openAdd('${esc(d.id)}')">＋ Add ship to ${esc(d.name)}</div>
+    </div>`:''}
+  </div>`;
+}
+
+function toggleCol(did){
+  const d=state.find(x=>x.id===did);
+  if(d){d.collapsed=!d.collapsed;save();renderAll();}
+}
+
+function populateDest(sel){
+  document.getElementById('fDest').innerHTML=state.map(d=>`<option value="${esc(d.id)}"${d.id===sel?' selected':''}>${esc(d.name)}</option>`).join('');
+}
+
+function openAdd(did){
+  editShipId=null;editDestId=did;
+  document.getElementById('modalTitle').textContent='Add Ship';
+  document.getElementById('fName').value='';
+  document.getElementById('fDate').value='2026-07-01';
+  document.getElementById('fPax').value='';
+  document.getElementById('fNote').value='';
+  populateDest(did);
+  document.getElementById('modalOverlay').classList.add('open');
+  document.getElementById('fName').focus();
+}
+
+function openEdit(did,sid){
+  const d=state.find(x=>x.id===did);
+  const s=d?.ships.find(x=>x.id===sid);
+  if(!s)return;
+  editShipId=sid;editDestId=did;
+  document.getElementById('modalTitle').textContent='Edit Ship';
+  document.getElementById('fName').value=s.name;
+  document.getElementById('fDate').value=s.arrival;
+  document.getElementById('fPax').value=s.pax||'';
+  document.getElementById('fNote').value=s.note||'';
+  populateDest(did);
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open');editShipId=null;editDestId=null;}
+
+function saveShip(){
+  const did=document.getElementById('fDest').value;
+  const name=document.getElementById('fName').value.trim().toUpperCase();
+  const arrival=document.getElementById('fDate').value;
+  const pax=parseInt(document.getElementById('fPax').value)||0;
+  const note=document.getElementById('fNote').value.trim();
+  if(!name||!arrival){alert('Please enter ship name and arrival date.');return;}
+  const dest=state.find(d=>d.id===did);
+  if(!dest)return;
+  if(editShipId){
+    for(const d of state){
+      const idx=d.ships.findIndex(s=>s.id===editShipId);
+      if(idx!==-1){
+        if(d.id===did){d.ships[idx]={...d.ships[idx],name,arrival,pax,note};}
+        else{const ship=d.ships.splice(idx,1)[0];ship.name=name;ship.arrival=arrival;ship.pax=pax;ship.note=note;dest.ships.push(ship);}
+        break;
+      }
+    }
+  }else{dest.ships.push({id:uid(),name,arrival,pax,note});}
+  save();closeModal();renderAll();
+}
+
+function delShip(did,sid){
+  if(!confirm('Remove this ship?'))return;
+  const d=state.find(x=>x.id===did);
+  if(d){d.ships=d.ships.filter(s=>s.id!==sid);save();renderAll();}
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(e.key==='Enter'&&document.getElementById('modalOverlay').classList.contains('open'))saveShip();
+});
+document.getElementById('modalOverlay').addEventListener('click',e=>{if(e.target===document.getElementById('modalOverlay'))closeModal();});
+renderAll();
+</script>
+</body>
+</html>
